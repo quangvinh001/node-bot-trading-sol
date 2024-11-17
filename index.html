@@ -40,6 +40,55 @@
             color: white;
             /* Màu chữ khi hover trên nút được chọn */
         }
+
+        /* Đảm bảo nội dung không tràn khỏi khung */
+        #transactionDetails {
+            max-width: 430px;
+            /* Giới hạn chiều rộng tối đa */
+            overflow-x: auto;
+            /* Thêm thanh cuộn ngang nếu nội dung vượt quá khung */
+            word-wrap: break-word;
+            /* Ngắt dòng nếu nội dung quá dài */
+            overflow-wrap: break-word;
+        }
+
+        #resultLog {
+            max-width: 950px;
+            /* Giới hạn chiều rộng tối đa */
+            overflow-x: auto;
+            /* Thêm thanh cuộn ngang nếu cần */
+            word-wrap: break-word;
+            /* Ngắt dòng cho chuỗi dài */
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+            /* Giữ khoảng cách và xuống dòng nếu cần */
+        }
+
+        /* Căn chỉnh giao diện gọn gàng hơn */
+        .transaction-item {
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            /* Viền nhẹ */
+            border-radius: 5px;
+            /* Bo góc */
+            margin-bottom: 10px;
+            /* Khoảng cách giữa các giao dịch */
+            background-color: #f9fafb;
+            /* Nền xám nhạt */
+        }
+
+        .transaction-item p {
+            margin: 5px 0;
+            /* Khoảng cách giữa các dòng */
+            word-wrap: break-word;
+            /* Ngắt dòng nếu chuỗi quá dài */
+            overflow-wrap: break-word;
+        }
+
+        .transaction-item strong {
+            color: #374151;
+            /* Màu chữ đậm */
+        }
     </style>
 </head>
 
@@ -321,9 +370,8 @@
                         <p><strong>Hành Động:</strong> ${bundledTxArgs.action || "Chưa nhập"}</p>
                         <p><strong>Địa Chỉ Token (Mint):</strong> ${bundledTxArgs.mint || "Chưa nhập"}</p>
                         <p><strong>Số Lượng:</strong> ${bundledTxArgs.amount || "Chưa nhập"}</p>
-                        <p><strong>Denominated In SOL:</strong> ${bundledTxArgs.denominatedInSol ? "Số lượng SOL" : "Số lượng Token"}</p>
                         <p><strong>Slippage:</strong> ${bundledTxArgs.slippage || "Chưa nhập"}</p>
-                        <p><strong>Priority Fee:</strong> ${bundledTxArgs.priorityFee || "Chưa nhập"}</p>
+                        <p><strong>Priority Fee:</strong> ${bundledTxArgs.priorityFee || "Chưa nhập"}</p>   
                     </div>
                 `;
 

@@ -2,9 +2,9 @@
   {
     "privateKey": "3ddkhVugzJe3CjQUsGM1LNaHLKxjecat6EgenGPdKsDhzumcP89P2k312Ct4JBaeRtopgw8V9Ayj3BvjGFbx93iD",
     "bundledTxArgs": {
-      "action": "buy",
+      "action": "sell",
       "mint": "FkjbKgPHykx7F45CJxvov61DEppNgh4kR8sBL4LKpump",
-      "amount": 123,
+      "amount": 3000,
       "slippage": 1,
       "priorityFee": 0.00005,
       "denominatedInSol": "false",
@@ -14,9 +14,9 @@
   {
     "privateKey": "5nNSEWeDgLRKWwxWG5sT5r1cewtQchCrBgJK56XRvCRvUabTTszPGp1cmK4y8XU5onb7nLz2tQyPTX8FCzq6D4MD",
     "bundledTxArgs": {
-      "action": "buy",
+      "action": "sell",
       "mint": "FkjbKgPHykx7F45CJxvov61DEppNgh4kR8sBL4LKpump",
-      "amount": 123,
+      "amount": 3000,
       "slippage": 1,
       "priorityFee": 0.00005,
       "denominatedInSol": "false",
@@ -26,9 +26,21 @@
   {
     "privateKey": "65TQbgGAqWoq6UQokdqqPYsSz7b26zzeN8Xpe6jK5nKGP9HFJWzGsGEuvgoPwjHFcqgJA2CDZSvskPXUYFbG8se3",
     "bundledTxArgs": {
-      "action": "buy",
+      "action": "sell",
       "mint": "FkjbKgPHykx7F45CJxvov61DEppNgh4kR8sBL4LKpump",
-      "amount": 123,
+      "amount": 3000,
+      "slippage": 1,
+      "priorityFee": 0.00005,
+      "denominatedInSol": "false",
+      "pool": "pump"
+    }
+  },
+  {
+    "privateKey": "4KFV9bZ6yaYcdRDq6nA1DgkMDLhwSpHFVX87a2S71XnJF4b3vCuejN5TzHtYztA7RUkCUNVfoNpRy9T1a3M67Gcg",
+    "bundledTxArgs": {
+      "action": "sell",
+      "mint": "FkjbKgPHykx7F45CJxvov61DEppNgh4kR8sBL4LKpump",
+      "amount": 3000,
       "slippage": 1,
       "priorityFee": 0.00005,
       "denominatedInSol": "false",

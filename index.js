@@ -221,8 +221,16 @@ app.post("/nhapthongso", async (req, res) => {
             // Nếu file không tồn tại, existingData sẽ là mảng rỗng
         }
 
-        // Nối dữ liệu mới vào dữ liệu cũ
-        const updatedData = [...existingData, ...formattedData];
+        // Tạo một map để dễ dàng kiểm tra và cập nhật `privateKey`
+        const existingDataMap = new Map(existingData.map(item => [item.privateKey, item]));
+
+        // Cập nhật hoặc thêm dữ liệu mới
+        formattedData.forEach(newItem => {
+            existingDataMap.set(newItem.privateKey, newItem); // Thêm mới hoặc ghi đè nếu trùng `privateKey`
+        });
+
+        // Chuyển map thành mảng để ghi lại vào file
+        const updatedData = Array.from(existingDataMap.values());
 
         // Ghi dữ liệu xuống file
         await fs.writeFile("params_action.txt", JSON.stringify(updatedData, null, 2));
