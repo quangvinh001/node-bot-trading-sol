@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solana Trading Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Các nút mặc định */
+        .action-btn {
+            background-color: #2d3748;
+            /* Màu nền mặc định */
+            color: #fdfdfd;
+            /* Màu chữ mặc định */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            /* Thêm hiệu ứng chuyển đổi */
+        }
+
+        /* Màu nền và màu chữ khi nút được chọn */
+        .action-btn.selected {
+            background-color: #48bb78;
+            /* Màu nền khi chọn (xanh lá) */
+            color: rgb(255, 255, 255);
+            /* Màu chữ khi chọn */
+        }
+
+        /* Hiệu ứng hover cho nút */
+        .action-btn:hover {
+            background-color: #38a169;
+            /* Màu nền khi hover (xanh lá đậm hơn) */
+            color: white;
+            /* Màu chữ khi hover */
+        }
+
+        /* Màu nền và màu chữ khi hover và nút được chọn */
+        .action-btn.selected:hover {
+            background-color: #2f855a;
+            /* Màu nền khi hover trên nút được chọn */
+            color: white;
+            /* Màu chữ khi hover trên nút được chọn */
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+    <!-- Phần nhập Private Keys và Thông Số Giao Dịch -->
+    <div class="container mx-auto p-6 flex-grow">
+        <div class="flex flex-col space-y-6">
+            <!-- Nút Ẩn/Hiện -->
+            <div class="flex justify-between mb-4">
+                <button id="toggleKeyFormButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Ẩn/Hiện Nhập Private Keys
+                </button>
+                <button id="toggleThongSoFormButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Ẩn/Hiện Nhập Thông Số Giao Dịch
+                </button>
+            </div>
+
+            <div class="flex space-x-5">
+                <!-- Form Nhập Private Keys -->
+                <div id="keyForm" class="bg-white rounded-lg shadow-lg p-6 w-full">
+                    <h1 class="text-2xl font-bold text-center text-blue-600 mb-4">Nhập Private Keys</h1>
+                    <textarea id="privateKeys" rows="10" class="w-full p-2 border border-gray-300 rounded"
+                        placeholder="Nhập private keys (mỗi key một dòng)"></textarea>
+                    <br />
+                    <button id="savePrivateKeys"
+                        class="bg-blue-500 text-white px-4 py-2 rounded mt-2 hover:bg-blue-700">Lưu Private
+                        Keys</button>
+                    <button id="getTokenButton"
+                        class="bg-blue-500 text-white px-4 py-2 rounded mt-2 hover:bg-blue-700">Lấy Số Lượng
+                        Token</button>
+
+                    <h1 class="text-2xl font-bold text-blue-600 mt-6">Hiển Thị Token</h1>
+                    <div id="resultLog1"
+                        class="bg-gray-50 border border-gray-300 p-4 rounded mt-4 overflow-y-auto max-h-40"></div>
+                </div>
+
+                <!-- Form Nhập Thông Số Giao Dịch -->
+                <div id="thongSoForm" class="bg-white rounded-lg shadow-lg p-6 w-full">
+                    <h1 class="text-2xl font-bold text-center text-blue-600 mb-4">Nhập Thông Số Giao Dịch</h1>
+
+                    <label for="key" class="font-semibold">Lưu Key: </label>
+                    <select id="key" class="w-full p-2 border border-gray-300 rounded mb-4">
+                        <!-- Các tùy chọn sẽ được thêm động -->
+                    </select>
+
+
+                    <label for="action" class="font-semibold">Action (Hành Động buy/sell): </label>
+                    <div id="action" class="grid grid-cols-2 gap-2 mb-4">
+                        <button type="button" id="buyBtn"
+                            class="action-btn p-2 text-center rounded bg-gray-800 text-gray-600" data-action="buy"
+                            value="buy">Buy</button>
+                        <button type="button" id="sellBtn"
+                            class="action-btn p-2 text-center rounded bg-gray-800 text-gray-600" data-action="sell"
+                            value="sell">Sell</button>
+                    </div>
+
+
+                    <label for="mint" class="font-semibold">Mint Address (Địa Chỉ TOKEN): </label>
+                    <input type="text" id="mint" class="w-full p-2 border border-gray-300 rounded mb-4" required />
+
+                    <label for="denominatedInSol" class="font-semibold">DenominatedInSol (SOL/tokens): </label>
+                    <select id="denominatedInSol" class="w-full p-2 border border-gray-300 rounded mb-4" required>
+                        <option value="true">amount of SOL</option>
+                        <option value="false">number of tokens</option>
+                    </select>
+
+                    <label for="amount" class="font-semibold">Amount (Số Lượng): </label>
+                    <input type="number" step="any" id="amount" class="w-full p-2 border border-gray-300 rounded mb-2"
+                        required />
+
+                    <div id="tokenOutput" class="font-semibold mt-2"></div>
+
+                    <div id="buyPercentages" class="hidden flex space-x-2 p-2 rounded-lg">
+                        <button class="text-xs px-3 py-1 rounded-md bg-[#1c1c24] text-gray-300 hover:bg-[#3a3a4a]"
+                            data-percentage="0">reset</button>
+                        <button class="text-xs px-3 py-1 rounded-md bg-[#1c1c24] text-gray-300 hover:bg-[#3a3a4a]"
+                            data-percentage="0.1">0.1 SOL</button>
+                        <button class="text-xs px-3 py-1 rounded-md bg-[#1c1c24] text-gray-300 hover:bg-[#3a3a4a]"
+                            data-percentage="0.5">0.5 SOL</button>
+                        <button class="text-xs px-3 py-1 rounded-md bg-[#1c1c24] text-gray-300 hover:bg-[#3a3a4a]"
+                            data-percentage="1">1 SOL</button>
+                    </div>
+
+                    <div id="sellPercentages" class="hidden flex space-x-2 p-2 rounded-lg">
+                        <button class="text-xs px-3 py-1 rounded-md bg-[#1c1c24] text-gray-300 hover:bg-[#3a3a4a]"
+                            data-percentage="0">reset</button>
+                        <button class="text-xs px-3 py-1 rounded-md bg-[#1c1c24] text-gray-300 hover:bg-[#3a3a4a]"
+                            data-percentage="0.25">25%</button>
+                        <button class="text-xs px-3 py-1 rounded-md bg-[#1c1c24] text-gray-300 hover:bg-[#3a3a4a]"
+                            data-percentage="0.5">50%</button>
+                        <button class="text-xs px-3 py-1 rounded-md bg-[#1c1c24] text-gray-300 hover:bg-[#3a3a4a]"
+                            data-percentage="0.75">75%</button>
+                        <button class="text-xs px-3 py-1 rounded-md bg-[#1c1c24] text-gray-300 hover:bg-[#3a3a4a]"
+                            data-percentage="1">100%</button>
+                    </div>
+
+
+                    <label for="slippage" class="font-semibold mt-4">Slippage (Trượt Giá): </label>
+                    <input type="number" id="slippage" class="w-full p-2 border border-gray-300 rounded mb-4"
+                        required />
+
+                    <label for="priorityFee" class="font-semibold">Priority Fee (Phí Ưu): </label>
+                    <input type="number" step="any" id="priorityFee"
+                        class="w-full p-2 border border-gray-300 rounded mb-4" required />
+
+                    <button id="saveThongSo" type="submit"
+                        class="bg-blue-500 text-white px-4 py-2 rounded mt-4 hover:bg-blue-700">Lưu Thông Số Giao
+                        Dịch</button>
+                    <button id="clearAll" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">
+                        Xóa hết thông số
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phần Thực Hiện Giao Dịch -->
+    <div class="container mx-auto p-6 flex-grow">
+        <h1 class="text-2xl font-bold text-center text-blue-600 mb-4 w-full">Thực Hiện Giao Dịch</h1>
+
+        <div class="flex w-full space-x-3">
+
+            <!-- Khu vực hiển thị thông số giao dịch -->
+            <div class="flex-1 bg-gray-50 p-6 rounded-lg shadow-lg border" style="flex: 3;">
+                <h2 class="text-xl font-bold text-center text-blue-600">Thông Số Giao Dịch</h2>
+                <div id="transactionDetails" class="mt-4">
+                    <!-- Thông số giao dịch sẽ hiển thị ở đây -->
+                </div>
+            </div>
+
+            <!-- Khu vực thực hiện giao dịch -->
+            <div class="flex-1 bg-gray-50 p-6 rounded-lg shadow-lg border" style="flex: 7;">
+                <button id="tradeButton"
+                    class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-700 w-full">Thực hiện giao
+                    dịch</button>
+                <h2 class="text-xl font-bold text-center mt-6">Kết quả giao dịch</h2>
+                <div id="resultLog"
+                    class="bg-gray-50 border border-gray-300 p-4 rounded mt-4 overflow-y-auto max-h-40 w-full text-center">
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const keyDropdown = document.getElementById("key");
+
+            if (!keyDropdown) {
+                console.error("Không tìm thấy phần tử dropdown với id 'key'");
+                return;
+            }
+
+            try {
+                // Gửi yêu cầu để lấy danh sách keys
+                const response = await fetch("/params_key");
+                console.log("Đang fetch danh sách keys từ API /params_key");
+
+                if (!response.ok) {
+                    console.error("API trả về lỗi:", response.status, response.statusText);
+                    return;
+                }
+
+                const keys = await response.json();
+                console.log("Danh sách keys nhận được:", keys);
+
+                // Thêm tùy chọn mặc định "Key Full"
+                const fullOption = document.createElement("option");
+                fullOption.value = "keyfull";
+                fullOption.textContent = "Key Full";
+                keyDropdown.appendChild(fullOption);
+
+                // Thêm các keys vào dropdown
+                keys.forEach(key => {
+                    const option = document.createElement("option");
+                    option.value = key;
+                    option.textContent = key;
+                    keyDropdown.appendChild(option);
+                });
+
+                console.log("Đã thêm danh sách keys vào dropdown");
+            } catch (error) {
+                console.error("Lỗi khi tải danh sách keys:", error);
+            }
+        });
+        // Cập nhật trạng thái ẩn/hiện form
+        function toggleVisibility(buttonId, formId, textWhenVisible, textWhenHidden) {
+            const button = document.getElementById(buttonId);
+            const form = document.getElementById(formId);
+            form.classList.toggle("hidden");
+            button.textContent = form.classList.contains("hidden") ? textWhenHidden : textWhenVisible;
+        }
+
+        document.getElementById("toggleKeyFormButton").addEventListener("click", function () {
+            toggleVisibility("toggleKeyFormButton", "keyForm", "Ẩn Nhập Private Keys", "Hiện Nhập Private Keys");
+        });
+
+        document.getElementById("toggleThongSoFormButton").addEventListener("click", function () {
+            toggleVisibility("toggleThongSoFormButton", "thongSoForm", "Ẩn Nhập Thông Số Giao Dịch", "Hiện Nhập Thông Số Giao Dịch");
+        });
+        // Hàm cập nhật trạng thái hiển thị phần trăm
+        function toggleActionSections(action) {
+            const buyPercentages = document.getElementById("buyPercentages");
+            const sellPercentages = document.getElementById("sellPercentages");
+            const buyBtn = document.getElementById("buyBtn");
+            const sellBtn = document.getElementById("sellBtn");
+
+            buyPercentages.classList.toggle("hidden", action !== "buy");
+            sellPercentages.classList.toggle("hidden", action !== "sell");
+
+            // Cập nhật trạng thái của nút buy/sell
+            updateButtonSelection(action, buyBtn, sellBtn);
+        }
+        // Hàm cập nhật hành động và thiết lập lại giao diện
+        function updateAction(action) {
+            console.log(`Selected action: ${action}`);
+            toggleActionSections(action); // Hiển thị đúng giao diện buy/sell
+
+            // Đặt lại giá trị của trường amount về 0 khi thay đổi hành động
+            const amountInput = document.getElementById("amount");
+            if (amountInput) {
+                amountInput.value = 0;
+            }
+
+            // Cập nhật token theo hành động buy/sell
+            const isBuy = action === 'buy';
+            updateTokenValue(baseTokenValue, isBuy);
+        }
+
+        function updateButtonSelection(action, buyBtn, sellBtn) {
+            if (action === "buy") {
+                buyBtn.classList.add("selected");
+                sellBtn.classList.remove("selected");
+            } else if (action === "sell") {
+                sellBtn.classList.add("selected");
+                buyBtn.classList.remove("selected");
+            } else {
+                // Nếu không có action chọn, reset trạng thái
+                buyBtn.classList.remove("selected");
+                sellBtn.classList.remove("selected");
+            }
+        }
+
+        // Thiết lập nút Buy và Sell
+        function setupActionButtons() {
+            const buyBtn = document.getElementById("buyBtn");
+            const sellBtn = document.getElementById("sellBtn");
+
+            buyBtn.addEventListener("click", function () {
+                toggleActionSections("buy"); // Hiển thị buyPercentages
+                updateTokenValue(baseTokenValue, true); // Tính toán dựa trên buyPercentages
+            });
+
+            sellBtn.addEventListener("click", function () {
+                toggleActionSections("sell"); // Hiển thị sellPercentages
+                updateTokenValue(baseTokenValue, false); // Tính toán dựa trên sellPercentages
+            });
+        }
+
+        async function loadTransactionDetails() {
+            try {
+                const response = await fetch("/params_action");
+                const transactions = await response.json();
+
+                if (transactions && transactions.length > 0) {
+                    const transactionDetails = document.getElementById("transactionDetails");
+                    transactionDetails.innerHTML = ""; // Xóa nội dung cũ
+
+                    // Lặp qua tất cả các giao dịch và thêm thông tin
+                    transactions.forEach((transaction, index) => {
+                        const { privateKey, bundledTxArgs } = transaction;
+
+                        // Tạo HTML cho từng giao dịch
+                        const transactionHTML = `
+                    <div class="transaction-item border-b pb-4 mb-4">
+                        <p><strong>Giao Dịch ${index + 1}</strong></p>
+                        <p><strong>Private Key:</strong> ${privateKey}</p>
+                        <p><strong>Hành Động:</strong> ${bundledTxArgs.action || "Chưa nhập"}</p>
+                        <p><strong>Địa Chỉ Token (Mint):</strong> ${bundledTxArgs.mint || "Chưa nhập"}</p>
+                        <p><strong>Số Lượng:</strong> ${bundledTxArgs.amount || "Chưa nhập"}</p>
+                        <p><strong>Denominated In SOL:</strong> ${bundledTxArgs.denominatedInSol ? "Số lượng SOL" : "Số lượng Token"}</p>
+                        <p><strong>Slippage:</strong> ${bundledTxArgs.slippage || "Chưa nhập"}</p>
+                        <p><strong>Priority Fee:</strong> ${bundledTxArgs.priorityFee || "Chưa nhập"}</p>
+                    </div>
+                `;
+
+                        // Thêm HTML vào transactionDetails
+                        transactionDetails.innerHTML += transactionHTML;
+                    });
+                } else {
+                    console.log("Không có giao dịch nào trong params_action.txt.");
+                }
+            } catch (error) {
+                console.log("Lỗi khi tải thông tin giao dịch:", error);
+            }
+
+            // Nếu cần, gọi loadParams để cập nhật thêm dữ liệu
+            await loadParams();
+        }
+
+        let baseTokenValue = 0;
+
+        // Hàm lấy giá trị token
+        async function loadToken() {
+            try {
+                const response = await fetch("/params");
+                const data = await response.json();
+                baseTokenValue = Math.floor(parseFloat(data.token));
+                updateTokenValue(baseTokenValue, true); // Gọi hàm để hiển thị buyPercentages ban đầu nếu cần
+            } catch (error) {
+                console.log("Không có dữ liệu.");
+            }
+        }
+        // Hàm cập nhật hành động và thiết lập lại giao diện
+        function updateAction(action) {
+            console.log(`Selected action: ${action}`);
+            toggleActionSections(action); // Hiển thị đúng giao diện buy/sell
+
+            // Đặt lại giá trị của trường amount về 0 khi thay đổi hành động
+            const amountInput = document.getElementById("amount");
+            if (amountInput) {
+                amountInput.value = 0;
+            }
+
+            // Cập nhật token theo hành động buy/sell
+            const isBuy = action === 'buy';
+            updateTokenValue(baseTokenValue, isBuy);
+        }
+        // Hàm tính toán token theo nút nhấn
+        function updateTokenValue(token, isBuy = false) {
+            const buyPercentages = document.getElementById("buyPercentages");
+            const sellPercentages = document.getElementById("sellPercentages");
+
+            let percentagesContainer = isBuy ? buyPercentages : sellPercentages;
+
+            if (percentagesContainer) {
+                const percentageButtons = percentagesContainer.querySelectorAll('[data-percentage]');
+
+                // Xóa tất cả sự kiện cũ trước khi gán sự kiện mới
+                percentageButtons.forEach(button => {
+                    const newButton = button.cloneNode(true); // Tạo một bản sao của button để xóa sự kiện cũ
+                    button.replaceWith(newButton); // Thay thế button cũ bằng bản sao
+
+                    newButton.addEventListener('click', function () {
+                        const percentage = parseFloat(newButton.dataset.percentage);
+
+                        // Nếu là buy, sử dụng giá trị trực tiếp trong data-percentage làm token tính toán
+                        const calculatedToken = isBuy
+                            ? percentage // Sử dụng giá trị trực tiếp trong data-percentage cho buy
+                            : Math.floor(token * percentage); // Tính token khi bán
+
+                        console.log(`Token sau khi áp dụng ${percentage * 100}% là: ${calculatedToken}`);
+
+                        // Hiển thị giá trị token trong #tokenOutput
+                        document.getElementById("tokenOutput").textContent = `Token: ${calculatedToken}`;
+
+                        // Tự động nhập giá trị vào input #amount
+                        const amountInput = document.getElementById("amount");
+                        if (amountInput) {
+                            amountInput.value = calculatedToken;
+                        }
+                    });
+                });
+            } else {
+                console.log(`Phần tử '${isBuy ? "buyPercentages" : "sellPercentages"}' không tồn tại.`);
+            }
+        }
+
+        async function loadParams() {
+            try {
+                // Lấy danh sách giao dịch từ params_action
+                const actionResponse = await fetch("/params_action");
+                const transactions = await actionResponse.json();
+
+                if (transactions && transactions.length > 0) {
+                    const keyDropdown = document.getElementById("key");
+                    const selectedKey = keyDropdown.value;
+
+                    // Tìm giao dịch liên quan đến key được chọn
+                    const selectedTransaction = transactions.find(tx => tx.privateKey === selectedKey);
+
+                    const actionData = selectedTransaction?.bundledTxArgs || transactions[0].bundledTxArgs;
+
+                    // Cập nhật giá trị các trường input
+                    document.getElementById("action").value = actionData.action || "";
+                    document.getElementById("mint").value = actionData.mint || "";
+                    document.getElementById("amount").value = actionData.amount || "";
+                    document.getElementById("denominatedInSol").value = actionData.denominatedInSol || "";
+                    document.getElementById("slippage").value = actionData.slippage || "";
+                    document.getElementById("priorityFee").value = actionData.priorityFee || "";
+
+                    // Hiển thị phần trăm buy hoặc sell nếu có
+                    toggleActionSections(actionData.action);  // Gọi toggleActionSections tùy theo action (buy/sell)
+                } else {
+                    console.log("Không có dữ liệu trong params_action.txt.");
+                }
+            } catch (error) {
+                console.log("Lỗi khi tải dữ liệu từ params_action.txt:", error);
+            }
+        }
+
+
+        window.onload = function () {
+            loadParams();  // Function to load the necessary parameters
+            loadTransactionDetails();  // Function to load the transaction details
+            loadToken();  // Function to load the token
+            setupActionButtons();  // Set up the action buttons for "Buy" and "Sell"
+            toggleActionSections(action);
+            updateAction(action);
+
+        };
+
+        // Lưu private keys
+        document.getElementById("savePrivateKeys").addEventListener("click", async function () {
+            const privateKeys = document.getElementById("privateKeys").value.trim().split("\n");
+
+            // Kiểm tra xem privateKeys có trống không
+            if (privateKeys.length === 0 || privateKeys[0] === "") {
+                alert("Vui lòng nhập ít nhất một private key");
+                return;
+            }
+
+            const response = await fetch("/nhapkey", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ privateKeys }),
+            });
+
+            const result = await response.text();
+            alert(result);
+        });
+
+        document.getElementById("saveThongSo").addEventListener("click", async function () {
+            const keyDropdown = document.getElementById("key");
+            const selectedKey = keyDropdown.value; // Lấy giá trị key từ dropdown
+            const isKeyFull = selectedKey === "keyfull"; // Kiểm tra chế độ Key Full
+
+            const action = document.querySelector(".action-btn.selected")?.dataset.action || "";
+            const mint = document.getElementById("mint").value.trim();
+            const amount = parseFloat(document.getElementById("amount").value.trim());
+            const slippage = parseFloat(document.getElementById("slippage").value.trim());
+            const priorityFee = parseFloat(document.getElementById("priorityFee").value.trim());
+            const denominatedInSol = document.getElementById("denominatedInSol").value.trim();
+
+            if (!action || !mint || isNaN(amount) || isNaN(slippage) || isNaN(priorityFee) || !denominatedInSol) {
+                alert("Vui lòng nhập đầy đủ thông số giao dịch.");
+                return;
+            }
+
+            try {
+                if (isKeyFull) {
+                    // Key Full: Gửi thông số giao dịch cho tất cả keys
+                    const response = await fetch("/params_key");
+                    const keys = await response.json();
+
+                    const payload = keys.map(key => ({
+                        privateKey: key,
+                        bundledTxArgs: { action, mint, amount, slippage, priorityFee, denominatedInSol, pool: "pump" },
+                    }));
+
+                    await sendTransactionData(payload);
+                } else {
+                    // Từng Key: Gửi thông số giao dịch cho key được chọn
+                    const payload = [{
+                        privateKey: selectedKey,
+                        bundledTxArgs: { action, mint, amount, slippage, priorityFee, denominatedInSol, pool: "pump" },
+                    }];
+
+                    await sendTransactionData(payload);
+                }
+            } catch (error) {
+                console.error("Lỗi khi lưu thông số giao dịch:", error);
+                alert("Không thể lưu thông số giao dịch.");
+            }
+        });
+
+        async function sendTransactionData(payload) {
+            const response = await fetch("/nhapthongso", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            if (response.ok) {
+                alert("Thông số giao dịch đã được lưu thành công!");
+                loadTransactionDetails();
+            } else {
+                const result = await response.text();
+                alert(`Lỗi: ${result}`);
+            }
+        }
+
+
+        document.getElementById("tradeButton").addEventListener("click", async function () {
+            // Display loading message
+            document.getElementById("resultLog").innerHTML = "Đang thực hiện giao dịch...";
+
+            try {
+                const response = await fetch("/trade", { method: "POST" });
+                if (!response.ok) throw new Error("Giao dịch thất bại");
+                const result = await response.text();
+                document.getElementById("resultLog").innerHTML = result.replace(
+                    /(https?:\/\/\S+)/g,
+                    '<a href="$1" target="_blank">$1</a>'
+                );
+            } catch (error) {
+                document.getElementById("resultLog").innerHTML = `Lỗi: ${error.message}`;
+            }
+
+        });
+
+
+        document.getElementById('getTokenButton').addEventListener('click', async function () {
+            try {
+                const response = await fetch('/viewtoken', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'getToken'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Có lỗi khi lấy dữ liệu token');
+                }
+
+                const data = await response.json();
+
+                if (data.details && data.details.length > 0) {
+                    let htmlContent = '<div class="token-list">';
+
+                    data.details.forEach((wallet, index) => {
+                        htmlContent += `<div class="wallet-item">`;
+                        htmlContent += `<p>📘 Ví ${index + 1}: <strong>${wallet.address}</strong></p>`;
+
+                        if (wallet.tokens && wallet.tokens.length > 0) {
+                            wallet.tokens.forEach(token => {
+                                const formattedBalance = parseFloat(token.balance).toLocaleString('en-US', {
+                                    minimumFractionDigits: 6,
+                                    maximumFractionDigits: 6
+                                });
+                                htmlContent += `
+                            <p class="token-details">
+                                • Số dư: <strong>${formattedBalance} </strong><br>
+                                • Mint: ${token.mint}
+                            </p>
+                        `;
+                            });
+                        } else if (wallet.error) {
+                            htmlContent += `<p class="error-message">❌ Lỗi: ${wallet.error}</p>`;
+                        } else {
+                            htmlContent += `<p class="no-token-message">❌ Không có token</p>`;
+                        }
+
+                        htmlContent += `</div>`;
+                    });
+
+                    htmlContent += '</div>';
+                    document.getElementById('resultLog1').innerHTML = htmlContent;
+
+                    // Lưu thông tin token của tất cả ví
+                    const allTokens = data.details
+                        .filter(wallet => wallet.tokens && wallet.tokens.length > 0)
+                        .map(wallet => wallet.tokens[0].balance)
+                        .map(balance => parseFloat(balance));
+
+                    if (allTokens.length > 0) {
+                        await saveTokenToFile(allTokens);
+                    }
+                } else {
+                    document.getElementById('resultLog1').innerHTML = 'Không tìm thấy token trong ví';
+                }
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('resultLog1').innerHTML = 'Có lỗi xảy ra khi lấy token';
+            }
+        });
+
+        async function saveTokenToFile(token) {
+            try {
+                const response = await fetch('/savetoken', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Có lỗi khi lưu token');
+                }
+
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.error || 'Có lỗi khi lưu token');
+                }
+
+            } catch (error) {
+                console.error('Error saving token:', error);
+                throw error;
+            }
+        }
+
+        document.getElementById("clearAll").addEventListener("click", async () => {
+            if (confirm("Bạn có chắc chắn muốn xóa hết thông số giao dịch?")) {
+                try {
+                    const response = await fetch("/clear_params_action", { method: "DELETE" });
+
+                    console.log("Kết quả từ server:", response);
+
+                    if (response.ok) {
+                        alert("Tất cả thông số giao dịch đã được xóa.");
+                        document.getElementById("transactionDetails").innerHTML = ""; // Xóa giao diện
+                    } else {
+                        const error = await response.text();
+                        console.error("Lỗi từ server:", error);
+                        alert(`Không thể xóa thông số giao dịch: ${error}`);
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi gửi yêu cầu xóa thông số giao dịch:", error);
+                    alert("Không thể xóa thông số giao dịch. Vui lòng thử lại.");
+                }
+            }
+        });
+
+
+    </script>
+
+</body>
+
+</html>
