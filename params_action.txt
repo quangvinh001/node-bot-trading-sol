@@ -2,12 +2,12 @@
   {
     "privateKey": "3ddkhVugzJe3CjQUsGM1LNaHLKxjecat6EgenGPdKsDhzumcP89P2k312Ct4JBaeRtopgw8V9Ayj3BvjGFbx93iD",
     "bundledTxArgs": {
-      "action": "sell",
+      "action": "buy",
       "mint": "FkjbKgPHykx7F45CJxvov61DEppNgh4kR8sBL4LKpump",
-      "amount": 1,
+      "amount": 0.1,
       "slippage": 0,
-      "priorityFee": 0,
-      "denominatedInSol": "false",
+      "priorityFee": 0.00005,
+      "denominatedInSol": "true",
       "pool": "pump"
     }
   }
