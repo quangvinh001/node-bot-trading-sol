@@ -4,9 +4,9 @@
     "bundledTxArgs": {
       "action": "sell",
       "mint": "FkjbKgPHykx7F45CJxvov61DEppNgh4kR8sBL4LKpump",
-      "amount": 3000,
-      "slippage": 3,
-      "priorityFee": 0.00005,
+      "amount": 1,
+      "slippage": 0,
+      "priorityFee": 0,
       "denominatedInSol": "false",
       "pool": "pump"
     }
