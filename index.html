@@ -349,6 +349,10 @@
             });
         }
 
+        function displayValue(value) {
+            return value != null ? value : "Chưa nhập";
+        }
+
         async function loadTransactionDetails() {
             try {
                 const response = await fetch("/params_action");
@@ -367,11 +371,11 @@
                     <div class="transaction-item border-b pb-4 mb-4">
                         <p><strong>Giao Dịch ${index + 1}</strong></p>
                         <p><strong>Private Key:</strong> ${privateKey}</p>
-                        <p><strong>Hành Động:</strong> ${bundledTxArgs.action || "Chưa nhập"}</p>
-                        <p><strong>Địa Chỉ Token (Mint):</strong> ${bundledTxArgs.mint || "Chưa nhập"}</p>
-                        <p><strong>Số Lượng:</strong> ${bundledTxArgs.amount || "Chưa nhập"}</p>
-                        <p><strong>Slippage:</strong> ${bundledTxArgs.slippage || "Chưa nhập"}</p>
-                        <p><strong>Priority Fee:</strong> ${bundledTxArgs.priorityFee || "Chưa nhập"}</p>   
+                        <p><strong>Hành Động:</strong> ${displayValue(bundledTxArgs.action)}</p>
+                        <p><strong>Địa Chỉ Token (Mint):</strong> ${displayValue(bundledTxArgs.mint)}</p>
+                        <p><strong>Số Lượng:</strong> ${displayValue(bundledTxArgs.amount)}</p>
+                        <p><strong>Slippage:</strong> ${displayValue(bundledTxArgs.slippage)}</p>
+                        <p><strong>Priority Fee:</strong> ${displayValue(bundledTxArgs.priorityFee)}</p>
                     </div>
                 `;
 
@@ -477,7 +481,7 @@
                     document.getElementById("mint").value = actionData.mint || "";
                     document.getElementById("amount").value = actionData.amount || "";
                     document.getElementById("denominatedInSol").value = actionData.denominatedInSol || "";
-                    document.getElementById("slippage").value = actionData.slippage || "";
+                    document.getElementById("slippage").value = actionData.slippage != null ? bundledTxArgs.slippage : "Chưa nhập";
                     document.getElementById("priorityFee").value = actionData.priorityFee || "";
 
                     // Hiển thị phần trăm buy hoặc sell nếu có
