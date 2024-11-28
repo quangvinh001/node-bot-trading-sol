@@ -1,11 +1,11 @@
 [
   {
-    "privateKey": "3ddkhVugzJe3CjQUsGM1LNaHLKxjecat6EgenGPdKsDhzumcP89P2k312Ct4JBaeRtopgw8V9Ayj3BvjGFbx93iD",
+    "privateKey": "3f2XXBsLbGeTEr1mRKzDLfjEWFDJ8ktMhFqPgoycAwdnXjowJWi9yns5nGUNAeNTafQBrREyd9gg27aBDb7bQ1YJ",
     "bundledTxArgs": {
       "action": "sell",
       "mint": "FkjbKgPHykx7F45CJxvov61DEppNgh4kR8sBL4LKpump",
-      "amount": 3000,
-      "slippage": 3,
+      "amount": 10256,
+      "slippage": 0,
       "priorityFee": 0.00005,
       "denominatedInSol": "false",
       "pool": "pump"

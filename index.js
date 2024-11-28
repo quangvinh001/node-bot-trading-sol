@@ -31,9 +31,9 @@ const getPublicKeyFromSecret = (secretKeyString) => {
     }
 };
 
-// Hàm lấy danh sách token cho một ví
 async function getFixedTokenAccount(walletPublicKey, targetMint = null) {
     try {
+        // Lấy danh sách các tài khoản token của ví
         const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
             walletPublicKey,
             {
@@ -63,80 +63,74 @@ async function getFixedTokenAccount(walletPublicKey, targetMint = null) {
 
 app.post("/viewtoken", async (req, res) => {
     try {
-        // Đọc mint address từ params_action.txt
-        const actionData = JSON.parse(await fs.readFile('params_action.txt', 'utf8'));
-        const mintAddress = actionData.mint;
-
-        // Đọc secret keys từ params_key.txt
-        const keysContent = await fs.readFile('params_key.txt', 'utf8');
-        const secretKeys = keysContent
-            .split('\n')
-            .map(key => key.trim())
-            .filter(key => key);
-
-        // Lấy thông tin token cho từng ví
-        const walletResults = [];
-
-        for (const secretKey of secretKeys) {
-            try {
-                const publicKey = getPublicKeyFromSecret(secretKey);
-                const tokens = await getFixedTokenAccount(publicKey, mintAddress);
-
-                const walletInfo = {
-                    address: publicKey.toString(),
-                    tokens: tokens
-                };
-
-                walletResults.push(walletInfo);
-            } catch (error) {
-                console.error(`Error processing wallet:`, error);
-                walletResults.push({
-                    address: "error",
-                    error: error.message
-                });
-            }
+        const { key } = req.body; // Lấy key người dùng đã chọn
+        if (!key) {
+            return res.status(400).json({ error: "Key không hợp lệ." });
         }
 
-        // Trả về kết quả theo format yêu cầu của frontend
-        res.json({
-            details: walletResults.map(wallet => ({
-                address: wallet.address,
-                tokens: wallet.tokens || [],
-                error: wallet.error
-            }))
-        });
+        // Đọc mint address từ file params_action.txt
+        const mintAddress = JSON.parse(await fs.readFile("params_action.txt", "utf8")).mint;
 
+        try {
+            // Lấy publicKey từ key
+            const publicKey = getPublicKeyFromSecret(key);
+
+            // Lấy danh sách token cho publicKey
+            const tokens = await getFixedTokenAccount(publicKey, mintAddress);
+
+            // Trả về kết quả cho ví đã chọn
+            res.json({
+                details: [
+                    {
+                        address: publicKey.toString(),
+                        tokens: tokens,
+                        error: null
+                    }
+                ]
+            });
+        } catch (error) {
+            console.error(`Lỗi khi xử lý key: ${key}`, error);
+            res.json({
+                details: [
+                    {
+                        address: "error",
+                        tokens: [],
+                        error: error.message
+                    }
+                ]
+            });
+        }
     } catch (error) {
-        console.error("Error processing request:", error);
-        res.status(500).json({
-            error: "Có lỗi khi lấy dữ liệu token"
-        });
+        console.error("Lỗi khi xử lý yêu cầu:", error);
+        res.status(500).json({ error: "Có lỗi khi lấy token." });
+    }
+});
+app.post('/savetoken', async (req, res) => {
+    const { tokens } = req.body;
+
+    // Kiểm tra nếu tokens không hợp lệ
+    if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
+        return res.status(400).json({ success: false, error: 'Token không hợp lệ' });
+    }
+
+    try {
+        // Chuẩn bị dữ liệu JSON để ghi vào file
+        const data = {
+            token: tokens // Lưu chỉ token (balance)
+        };
+
+        // Lưu token dưới dạng JSON vào file
+        await fs.writeFile('params.txt', JSON.stringify(data, null, 2));
+
+        res.json({ success: true, message: 'Token đã được lưu thành công dưới dạng JSON' });
+    } catch (err) {
+        console.error("Lỗi khi ghi file:", err);
+        return res.status(500).json({ success: false, error: 'Không thể lưu token vào file' });
     }
 });
 
-// Route để lưu token vào tệp `params.txt`
-app.post('/savetoken', (req, res) => {
-    const { token } = req.body;
 
-    // Kiểm tra nếu token không hợp lệ
-    if (!token) {
-        return res.status(400).send('Token không hợp lệ');
-    }
 
-    // Chuẩn bị dữ liệu JSON để ghi vào file
-    const data = {
-        token: token
-    };
-
-    // Lưu token dưới dạng JSON vào file
-    fs.writeFile('params.txt', JSON.stringify(data, null, 2), (err) => {
-        if (err) {
-            console.error("Lỗi khi ghi file:", err);
-            return res.status(500).send('Không thể lưu token vào file');
-        }
-        res.send('Token đã được lưu thành công dưới dạng JSON');
-    });
-});
 
 // Route để phục vụ file index.html
 app.get("/", async (req, res) => {

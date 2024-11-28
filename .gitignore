@@ -1,2 +1,6 @@
 node_modules/
 .env
+test/
+params_action.txt
+params_key.txt
+params.txt
